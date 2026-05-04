@@ -24,23 +24,61 @@ body {
 
 .toolbar {
   position: fixed;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 16px;
+  top: 16px;
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
   gap: 5px;
-  padding: 10px 8px;
+  padding: 8px;
   background: rgba(22, 22, 28, 0.88);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 6px 28px rgba(0, 0, 0, 0.5);
   pointer-events: auto;
   z-index: 200;
-  min-width: 68px;
+  max-width: calc(100vw - 32px);
+  overflow-x: auto;
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 22px;
+  min-height: 36px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: grab;
+  font-size: 14px;
+  line-height: 1;
+  user-select: none;
+}
+
+.drag-handle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.toolbar-status {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: rgba(217, 138, 164, 0.18);
+  border: 1px solid rgba(217, 138, 164, 0.34);
+  color: rgba(255, 230, 238, 0.94);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .toolbar-btn {
@@ -48,6 +86,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  flex: 0 0 auto;
   padding: 7px 6px;
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -56,6 +95,7 @@ body {
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
   font-size: 11px;
+  min-width: 52px;
 }
 
 .toolbar-btn:hover {
@@ -91,9 +131,10 @@ body {
 }
 
 .toolbar-divider {
-  height: 1px;
+  width: 1px;
+  align-self: stretch;
   background: rgba(255, 255, 255, 0.1);
-  margin: 1px 0;
+  margin: 0 1px;
 }
 
 /* ─── Color picker ─────────────────────────────────────── */
@@ -103,6 +144,7 @@ body {
   grid-template-columns: repeat(4, 1fr);
   gap: 4px;
   padding: 2px 0;
+  flex: 0 0 auto;
 }
 
 .color-btn {
@@ -129,11 +171,11 @@ body {
 /* ─── Toolbar hints ─────────────────────────────────────── */
 
 .toolbar-hints {
-  display: flex;
-  flex-direction: column;
+  display: none;
+  flex-direction: row;
   gap: 2px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-left: 4px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .toolbar-hints span {
@@ -147,9 +189,8 @@ body {
 
 .text-stamp-panel {
   position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 16px;
+  top: 104px;
   background: rgba(22, 22, 28, 0.92);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -162,6 +203,20 @@ body {
   flex-direction: column;
   gap: 8px;
   max-width: 560px;
+}
+
+.text-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 12px;
+  cursor: grab;
+}
+
+.text-panel-title .drag-handle {
+  width: 20px;
+  min-height: 20px;
 }
 
 .text-stamp-top {
@@ -223,23 +278,23 @@ body {
 
 /* ─── KokoMite ripple animation ─────────────────────────── */
 
-.koko-mite-ripple {
+.koko-mite-focus-ring {
   position: absolute;
   border-radius: 50%;
-  border: 3px solid #ff3333;
-  animation: koko-ripple 1s ease-out infinite;
+  border: 4px solid #d98aa4;
+  width: 132px;
+  height: 132px;
+  animation: koko-focus-ring 0.75s ease-in-out 2;
   top: 0;
   left: 0;
   transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 6px rgba(217, 138, 164, 0.16);
 }
 
-.koko-mite-r1 { width: 44px; height: 44px; animation-delay: 0s;    }
-.koko-mite-r2 { width: 44px; height: 44px; animation-delay: 0.33s; }
-.koko-mite-r3 { width: 44px; height: 44px; animation-delay: 0.66s; }
-
-@keyframes koko-ripple {
-  0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
+@keyframes koko-focus-ring {
+  0%   { transform: translate(-50%, -50%) scale(1); opacity: 0.15; }
+  18%  { opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(0.28); opacity: 0; }
 }
 
 .koko-mite-label {
@@ -247,7 +302,7 @@ body {
   top: -44px;
   left: 0;
   transform: translateX(-50%);
-  background: rgba(255, 44, 44, 0.92);
+  background: rgba(217, 138, 164, 0.94);
   color: #fff;
   font-size: 13px;
   font-weight: bold;
@@ -261,4 +316,10 @@ body {
 @keyframes koko-label-pop {
   from { transform: translateX(-50%) scale(0.7); opacity: 0; }
   to   { transform: translateX(-50%) scale(1);   opacity: 1; }
+}
+
+@media (min-width: 980px) {
+  .toolbar-hints {
+    display: flex;
+  }
 }

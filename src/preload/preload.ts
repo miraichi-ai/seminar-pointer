@@ -14,4 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setClickThrough: (): void => {
     ipcRenderer.send('set-click-through')
   },
+  quitApp: (): void => {
+    ipcRenderer.send('quit-app')
+  },
 })

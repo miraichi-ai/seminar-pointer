@@ -1,4 +1,5 @@
 #!/bin/zsh
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 APP_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$APP_DIR"
-exec npm run dev
+exec npm run dev >> "$APP_DIR/seminar-pointer-launch.log" 2>&1

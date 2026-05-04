@@ -23,6 +23,7 @@ interface Props {
   onAddItem: (item: DrawingItem) => void
   onAddMarker: (x: number, y: number) => void
   onExpireMarker: (id: string) => void
+  onPointerMove: (x: number, y: number) => void
 }
 
 type Point = { x: number; y: number }
@@ -42,6 +43,7 @@ export function OverlayCanvas({
   onAddItem,
   onAddMarker,
   onExpireMarker,
+  onPointerMove,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
@@ -117,6 +119,9 @@ export function OverlayCanvas({
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isActive) return
     const pt = getPoint(e)
+    onPointerMove(pt.x, pt.y)
+
+    if (selectedTool === 'none') return
 
     if (selectedTool === 'text') {
       if (!pendingText.trim()) return
@@ -138,8 +143,10 @@ export function OverlayCanvas({
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const pt = getPoint(e)
+    onPointerMove(pt.x, pt.y)
     if (!isDrawing || !startPt.current) return
-    const preview = buildPreview(startPt.current, getPoint(e))
+    const preview = buildPreview(startPt.current, pt)
     if (preview) redraw(preview)
   }
 
@@ -169,6 +176,7 @@ export function OverlayCanvas({
 
   const cursor = (): string => {
     if (!isActive) return 'default'
+    if (selectedTool === 'none') return 'default'
     if (selectedTool === 'text') return 'text'
     return 'crosshair'
   }

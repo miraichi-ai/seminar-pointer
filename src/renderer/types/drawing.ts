@@ -1,4 +1,5 @@
 export type DrawingTool =
+  | 'none'
   | 'rectangle'
   | 'circle'
   | 'line'

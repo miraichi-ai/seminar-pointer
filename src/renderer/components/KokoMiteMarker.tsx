@@ -38,9 +38,7 @@ function SingleMarker({
         zIndex: 50,
       }}
     >
-      <div className="koko-mite-ripple koko-mite-r1" />
-      <div className="koko-mite-ripple koko-mite-r2" />
-      <div className="koko-mite-ripple koko-mite-r3" />
+      <div className="koko-mite-focus-ring" />
       <div className="koko-mite-label">{marker.label}</div>
     </div>
   )

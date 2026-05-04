@@ -1,8 +1,9 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, screen } from 'electron'
+import { app, BrowserWindow, Menu, Tray, globalShortcut, ipcMain, nativeImage, screen } from 'electron'
 import { join } from 'path'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayActive = false
+let tray: Tray | null = null
 
 function getAllDisplayBounds(): Electron.Rectangle {
   const displays = screen.getAllDisplays()
@@ -30,6 +31,54 @@ function setOverlayActive(active: boolean): void {
     mainWindow.setIgnoreMouseEvents(true, { forward: true })
   }
   mainWindow.webContents.send('toggle-overlay', isOverlayActive)
+  updateTrayMenu()
+}
+
+function updateTrayMenu(): void {
+  if (!tray) return
+
+  tray.setTitle(isOverlayActive ? 'Seminar Pointer ●' : 'Seminar Pointer')
+  tray.setToolTip(`Seminar Pointer: ${isOverlayActive ? '表示中' : '待機中'}`)
+  tray.setContextMenu(Menu.buildFromTemplate([
+    {
+      label: `状態: ${isOverlayActive ? '表示中' : '待機中'}`,
+      enabled: false,
+    },
+    { type: 'separator' },
+    {
+      label: isOverlayActive ? 'オーバーレイを隠す' : 'オーバーレイを表示',
+      accelerator: 'CommandOrControl+Shift+S',
+      click: () => setOverlayActive(!isOverlayActive),
+    },
+    {
+      label: '全消去',
+      accelerator: 'CommandOrControl+Shift+C',
+      click: () => mainWindow?.webContents.send('clear-all'),
+    },
+    { type: 'separator' },
+    {
+      label: 'Seminar Pointer を終了',
+      accelerator: 'CommandOrControl+Q',
+      click: () => app.quit(),
+    },
+  ]))
+}
+
+function createTray(): void {
+  const trayImage = nativeImage.createFromBuffer(Buffer.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+    0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+    0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4,
+    0x89, 0x00, 0x00, 0x00, 0x0a, 0x49, 0x44, 0x41,
+    0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00,
+    0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00,
+    0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
+    0x42, 0x60, 0x82,
+  ]))
+  tray = new Tray(trayImage)
+  tray.on('click', () => setOverlayActive(!isOverlayActive))
+  updateTrayMenu()
 }
 
 function createWindow(): void {
@@ -89,6 +138,7 @@ function registerShortcuts(): void {
 
 app.whenReady().then(() => {
   createWindow()
+  createTray()
   registerShortcuts()
 
   const resizeOverlayWindow = () => {
@@ -115,4 +165,8 @@ app.on('will-quit', () => {
 
 ipcMain.on('set-click-through', () => {
   setOverlayActive(false)
+})
+
+ipcMain.on('quit-app', () => {
+  app.quit()
 })

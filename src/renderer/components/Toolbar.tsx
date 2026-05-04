@@ -6,12 +6,16 @@ interface Props {
   onSelectTool: (tool: DrawingTool) => void
   onClearAll: () => void
   onClose: () => void
+  onQuit: () => void
   color: string
   onColorChange: (color: string) => void
   colors: string[]
+  position: { x: number; y: number }
+  onPositionChange: (position: { x: number; y: number }) => void
 }
 
 const TOOLS: Array<{ tool: DrawingTool; label: string; icon: string }> = [
+  { tool: 'none',      label: '操作なし', icon: '↖' },
   { tool: 'rectangle', label: '四角',     icon: '▭' },
   { tool: 'circle',    label: '丸',       icon: '○' },
   { tool: 'line',      label: '線',       icon: '╱' },
@@ -25,12 +29,47 @@ export function Toolbar({
   onSelectTool,
   onClearAll,
   onClose,
+  onQuit,
   color,
   onColorChange,
   colors,
+  position,
+  onPositionChange,
 }: Props) {
+  const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const startX = e.clientX
+    const startY = e.clientY
+    const startPos = position
+
+    const onMove = (moveEvent: MouseEvent) => {
+      const nextX = Math.max(8, Math.min(window.innerWidth - 80, startPos.x + moveEvent.clientX - startX))
+      const nextY = Math.max(8, Math.min(window.innerHeight - 48, startPos.y + moveEvent.clientY - startY))
+      onPositionChange({ x: nextX, y: nextY })
+    }
+
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
   return (
-    <div className="toolbar" onMouseDown={e => e.stopPropagation()}>
+    <div
+      className="toolbar"
+      style={{ left: position.x, top: position.y }}
+      onMouseDown={e => e.stopPropagation()}
+    >
+      <div className="drag-handle" onMouseDown={startDrag} title="移動">
+        ⋮⋮
+      </div>
+      <div className="toolbar-status" title="Seminar Pointer 起動中">
+        起動中
+      </div>
       {TOOLS.map(({ tool, label, icon }) => (
         <button
           key={tool}
@@ -69,10 +108,16 @@ export function Toolbar({
         <span className="tb-label">閉じる</span>
       </button>
 
+      <button className="toolbar-btn btn-danger" onClick={onQuit} title="完全終了">
+        <span className="tb-icon">Q</span>
+        <span className="tb-label">終了</span>
+      </button>
+
       <div className="toolbar-hints">
         <span>⌘⇧S: 表示切替</span>
         <span>⌘⇧C: 全消去</span>
-        <span>Esc: モード解除</span>
+        <span>Ctrl×2: ここ見て</span>
+        <span>Esc: 操作なし</span>
       </div>
     </div>
   )
