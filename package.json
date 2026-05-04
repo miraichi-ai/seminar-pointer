@@ -2,12 +2,40 @@
   "name": "seminar-pointer",
   "version": "1.0.0",
   "description": "オンラインセミナー用画面注釈ツール",
+  "author": "miraichi-ai",
   "main": "out/main/main.js",
   "scripts": {
     "dev": "ELECTRON_RUN_AS_NODE= electron-vite dev",
     "start": "npm run dev",
     "build": "electron-vite build",
-    "preview": "electron-vite preview"
+    "preview": "electron-vite preview",
+    "dist": "npm run build && electron-builder --mac dmg --arm64 --x64 --publish never"
+  },
+  "build": {
+    "appId": "ai.miraichi.seminar-pointer",
+    "productName": "Seminar Pointer",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "artifactName": "Seminar-Pointer-${version}-${arch}.${ext}"
+    }
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
@@ -15,6 +43,7 @@
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.0",
     "electron": "^29.0.0",
+    "electron-builder": "^26.8.1",
     "electron-vite": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
