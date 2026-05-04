@@ -168,6 +168,36 @@ body {
   transform: scale(1.15);
 }
 
+/* ─── Blur region ──────────────────────────────────────── */
+
+.blur-region {
+  position: fixed;
+  display: block;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blur-capture-error {
+  position: fixed;
+  left: 50%;
+  bottom: 94px;
+  transform: translateX(-50%);
+  z-index: 210;
+  max-width: min(460px, calc(100vw - 32px));
+  padding: 10px 14px;
+  border: 1px solid rgba(217, 138, 164, 0.36);
+  border-radius: 8px;
+  background: rgba(22, 22, 28, 0.92);
+  color: rgba(255, 230, 238, 0.95);
+  font-size: 13px;
+  text-align: center;
+  pointer-events: none;
+}
+
 /* ─── Toolbar hints ─────────────────────────────────────── */
 
 .toolbar-hints {
@@ -221,7 +251,7 @@ body {
 
 .text-stamp-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
 }
 
@@ -238,8 +268,12 @@ body {
   border-radius: 7px;
   color: #fff;
   font-size: 15px;
-  padding: 4px 9px;
-  min-width: 100px;
+  line-height: 1.45;
+  padding: 7px 9px;
+  min-width: 180px;
+  min-height: 72px;
+  resize: vertical;
+  font-family: inherit;
 }
 
 .text-stamp-input:focus {

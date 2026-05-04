@@ -1,9 +1,14 @@
-import { app, BrowserWindow, Menu, Tray, globalShortcut, ipcMain, nativeImage, screen } from 'electron'
+import { app, BrowserWindow, Menu, Tray, globalShortcut, ipcMain, nativeImage, screen, desktopCapturer } from 'electron'
 import { join } from 'path'
 
 let mainWindow: BrowserWindow | null = null
 let isOverlayActive = false
 let tray: Tray | null = null
+
+function registerShortcut(accelerator: string, callback: () => void): void {
+  const registered = globalShortcut.register(accelerator, callback)
+  if (!registered) console.warn(`Failed to register shortcut: ${accelerator}`)
+}
 
 function getAllDisplayBounds(): Electron.Rectangle {
   const displays = screen.getAllDisplays()
@@ -20,16 +25,21 @@ function getAllDisplayBounds(): Electron.Rectangle {
   }
 }
 
-function setOverlayActive(active: boolean): void {
+function updateWindowMouseBehavior(): void {
   if (!mainWindow) return
-
-  isOverlayActive = active
-  if (active) {
+  if (isOverlayActive) {
     mainWindow.setIgnoreMouseEvents(false)
     mainWindow.focus()
   } else {
     mainWindow.setIgnoreMouseEvents(true, { forward: true })
   }
+}
+
+function setOverlayActive(active: boolean): void {
+  if (!mainWindow) return
+
+  isOverlayActive = active
+  updateWindowMouseBehavior()
   mainWindow.webContents.send('toggle-overlay', isOverlayActive)
   updateTrayMenu()
 }
@@ -55,7 +65,6 @@ function updateTrayMenu(): void {
       accelerator: 'CommandOrControl+Shift+C',
       click: () => mainWindow?.webContents.send('clear-all'),
     },
-    { type: 'separator' },
     {
       label: 'Seminar Pointer を終了',
       accelerator: 'CommandOrControl+Q',
@@ -126,13 +135,20 @@ function createWindow(): void {
 }
 
 function registerShortcuts(): void {
-  globalShortcut.register('CommandOrControl+Shift+S', () => {
+  const toggleOverlay = () => {
     setOverlayActive(!isOverlayActive)
-  })
+  }
 
-  globalShortcut.register('CommandOrControl+Shift+C', () => {
+  registerShortcut('CommandOrControl+Shift+S', toggleOverlay)
+  registerShortcut('CommandOrControl+Shift+F', toggleOverlay)
+
+  registerShortcut('CommandOrControl+Shift+C', () => {
     if (!mainWindow) return
     mainWindow.webContents.send('clear-all')
+  })
+
+  registerShortcut('Esc', () => {
+    mainWindow?.webContents.send('escape-operation')
   })
 }
 
@@ -165,6 +181,29 @@ app.on('will-quit', () => {
 
 ipcMain.on('set-click-through', () => {
   setOverlayActive(false)
+})
+
+ipcMain.handle('get-screen-source', async () => {
+  const cursorPoint = screen.getCursorScreenPoint()
+  const display = screen.getDisplayNearestPoint(cursorPoint)
+  const windowBounds = mainWindow?.getBounds() ?? getAllDisplayBounds()
+  const sources = await desktopCapturer.getSources({
+    types: ['screen'],
+    thumbnailSize: { width: 0, height: 0 },
+  })
+  const matchingSource = sources.find(source => source.display_id === String(display.id)) ?? sources[0]
+  return matchingSource
+    ? {
+        id: matchingSource.id,
+        name: matchingSource.name,
+        bounds: {
+          x: display.bounds.x - windowBounds.x,
+          y: display.bounds.y - windowBounds.y,
+          width: display.bounds.width,
+          height: display.bounds.height,
+        },
+      }
+    : null
 })
 
 ipcMain.on('quit-app', () => {

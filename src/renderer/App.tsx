@@ -12,7 +12,7 @@ type PanelPosition = { x: number; y: number }
 
 const getInitialToolbarPosition = (): PanelPosition => ({
   x: 16,
-  y: Math.max(16, window.innerHeight - 112),
+  y: Math.max(16, window.innerHeight - 190),
 })
 
 const getInitialTextPanelPosition = (): PanelPosition => ({
@@ -29,7 +29,7 @@ export default function App() {
   const [toolbarPosition, setToolbarPosition] = useState<PanelPosition>(getInitialToolbarPosition)
   const [textPanelPosition, setTextPanelPosition] = useState<PanelPosition>(getInitialTextPanelPosition)
   const lastPointerRef = useRef<PanelPosition>({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
-  const { items, addItem, undoLast, clearAll: clearItems } = useDrawing()
+  const { items, addItem, updateItem, undoLast, clearAll: clearItems } = useDrawing()
 
   const clearAll = useCallback(() => {
     clearItems()
@@ -72,7 +72,9 @@ export default function App() {
 
   useShortcuts({
     isActive: isOverlayActive,
-    onEscape: () => setSelectedTool('none'),
+    onEscape: () => {
+      setSelectedTool('none')
+    },
     onUndo: undo,
     onPulseMarker: () => handleAddMarker(lastPointerRef.current.x, lastPointerRef.current.y),
   })
@@ -84,9 +86,13 @@ export default function App() {
     const unsubClear = window.electronAPI.onClearAll(() => {
       clearAll()
     })
+    const unsubEscape = window.electronAPI.onEscapeOperation(() => {
+      setSelectedTool('none')
+    })
     return () => {
       unsubToggle()
       unsubClear()
+      unsubEscape()
     }
   }, [clearAll])
 
@@ -107,6 +113,7 @@ export default function App() {
         items={items}
         markers={markers}
         onAddItem={addItem}
+        onUpdateItem={updateItem}
         onAddMarker={handleAddMarker}
         onExpireMarker={handleExpireMarker}
         onPointerMove={(x, y) => {
@@ -125,7 +132,7 @@ export default function App() {
         position={toolbarPosition}
         onPositionChange={setToolbarPosition}
       />
-      {selectedTool === 'text' && (
+      {isOverlayActive && selectedTool === 'text' && (
         <TextStampTool
           value={pendingText}
           onChange={setPendingText}

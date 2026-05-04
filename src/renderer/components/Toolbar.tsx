@@ -22,7 +22,10 @@ const TOOLS: Array<{ tool: DrawingTool; label: string; icon: string }> = [
   { tool: 'arrow',     label: '矢印',     icon: '→' },
   { tool: 'text',      label: 'テキスト', icon: 'T' },
   { tool: 'marker',    label: 'ここ見て', icon: '👆' },
+  { tool: 'blur',      label: 'ぼかし',   icon: '▦' },
 ]
+
+const DOCK_SAFE_BOTTOM = 190
 
 export function Toolbar({
   selectedTool,
@@ -45,7 +48,7 @@ export function Toolbar({
 
     const onMove = (moveEvent: MouseEvent) => {
       const nextX = Math.max(8, Math.min(window.innerWidth - 80, startPos.x + moveEvent.clientX - startX))
-      const nextY = Math.max(8, Math.min(window.innerHeight - 48, startPos.y + moveEvent.clientY - startY))
+      const nextY = Math.max(8, Math.min(window.innerHeight - DOCK_SAFE_BOTTOM, startPos.y + moveEvent.clientY - startY))
       onPositionChange({ x: nextX, y: nextY })
     }
 

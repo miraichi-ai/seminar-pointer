@@ -42,13 +42,13 @@ export function TextStampTool({ value, onChange, presets, position, onPositionCh
       </div>
       <div className="text-stamp-top">
         <label className="text-stamp-label">スタンプ文字：</label>
-        <input
-          type="text"
+        <textarea
           className="text-stamp-input"
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder="テキストを入力"
           autoFocus
+          rows={3}
           onMouseDown={e => e.stopPropagation()}
           onClick={e => e.stopPropagation()}
         />

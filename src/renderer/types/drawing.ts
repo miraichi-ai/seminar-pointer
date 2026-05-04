@@ -6,6 +6,7 @@ export type DrawingTool =
   | 'arrow'
   | 'text'
   | 'marker'
+  | 'blur'
 
 export type BaseItem = {
   id: string
@@ -63,6 +64,15 @@ export type MarkerItem = BaseItem & {
   durationMs: number
 }
 
+export type BlurItem = BaseItem & {
+  type: 'blur'
+  x: number
+  y: number
+  width: number
+  height: number
+  blurPx: number
+}
+
 export type DrawingItem =
   | RectangleItem
   | CircleItem
@@ -70,3 +80,4 @@ export type DrawingItem =
   | ArrowItem
   | TextItem
   | MarkerItem
+  | BlurItem

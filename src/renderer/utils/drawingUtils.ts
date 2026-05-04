@@ -5,6 +5,7 @@ import type {
   LineItem,
   ArrowItem,
   TextItem,
+  BlurItem,
 } from '../types/drawing'
 
 export function drawItem(ctx: CanvasRenderingContext2D, item: DrawingItem): void {
@@ -22,8 +23,28 @@ export function drawItem(ctx: CanvasRenderingContext2D, item: DrawingItem): void
     case 'arrow':     drawArrow(ctx, item);     break
     case 'text':      drawText(ctx, item);      break
     case 'marker':    break
+    case 'blur':      drawBlurPlaceholder(ctx, item); break
   }
 
+  ctx.restore()
+}
+
+function drawBlurPlaceholder(ctx: CanvasRenderingContext2D, item: BlurItem): void {
+  const x = item.width < 0 ? item.x + item.width : item.x
+  const y = item.height < 0 ? item.y + item.height : item.y
+  const w = Math.abs(item.width)
+  const h = Math.abs(item.height)
+  if (w < 2 || h < 2) return
+
+  ctx.save()
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.72)'
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'
+  ctx.setLineDash([8, 7])
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.roundRect(x, y, w, h, 8)
+  ctx.fill()
+  ctx.stroke()
   ctx.restore()
 }
 
@@ -95,9 +116,12 @@ function drawArrow(ctx: CanvasRenderingContext2D, item: ArrowItem): void {
 
 function drawText(ctx: CanvasRenderingContext2D, item: TextItem): void {
   ctx.font = `bold ${item.fontSize}px 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif`
-  ctx.textBaseline = 'middle'
+  ctx.textBaseline = 'top'
   ctx.shadowColor = 'rgba(0,0,0,0.55)'
   ctx.shadowBlur = 5
   ctx.fillStyle = item.color
-  ctx.fillText(item.text, item.x, item.y)
+  const lineHeight = item.fontSize * 1.25
+  item.text.split(/\r?\n/).forEach((line, index) => {
+    ctx.fillText(line, item.x, item.y + lineHeight * index)
+  })
 }
